@@ -1,0 +1,8 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+package(default_visibility = ["//podman:__pkg__"])
+
+bzl_library(
+    name = "known_versions_bzl",
+    srcs = ["known_versions.bzl"],
+)

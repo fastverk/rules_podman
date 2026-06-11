@@ -7,6 +7,17 @@ module(
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
 
-# Dev-only.
+# Dev-only: only loaded by docs/BUILD.bazel and examples/smoke/...
 bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True)
+
+# Dev-only end-to-end smoke: pulls @podman for
+# `bazel test //examples/smoke:...`. Consumers don't see this — they
+# call `use_extension` themselves in their own MODULE.bazel (see README).
+podman = use_extension("//podman:extensions.bzl", "podman", dev_dependency = True)
+use_repo(podman, "podman")
+
+register_toolchains(
+    "@podman//:podman_toolchain_def",
+    dev_dependency = True,
+)

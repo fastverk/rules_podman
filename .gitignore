@@ -4,3 +4,4 @@ bazel-*
 target/
 .claude/
 MODULE.bazel.lock
+__pycache__/

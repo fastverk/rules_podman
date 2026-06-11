@@ -1,0 +1,32 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Resolved by podman_run / podman_build / podman_image_load. Register a
+# concrete client with `register_toolchains("@podman//:podman_toolchain_def")`.
+toolchain_type(name = "toolchain_type")
+
+exports_files([
+    "defs.bzl",
+    "extensions.bzl",
+    "toolchains.bzl",
+])
+
+bzl_library(
+    name = "defs_bzl",
+    srcs = ["defs.bzl"],
+    visibility = ["//docs:__pkg__"],
+)
+
+bzl_library(
+    name = "extensions_bzl",
+    srcs = ["extensions.bzl"],
+    visibility = ["//docs:__pkg__"],
+    deps = ["//podman/private:known_versions_bzl"],
+)
+
+bzl_library(
+    name = "toolchains_bzl",
+    srcs = ["toolchains.bzl"],
+    visibility = ["//docs:__pkg__"],
+)

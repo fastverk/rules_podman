@@ -1,0 +1,5 @@
+# Minimal context exercised by //examples/smoke:image. Building it needs
+# a reachable Podman service; the build_test only covers rule analysis +
+# launcher generation.
+FROM scratch
+COPY app.txt /app.txt

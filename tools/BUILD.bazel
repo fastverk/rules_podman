@@ -1,0 +1,8 @@
+package(default_visibility = ["//visibility:public"])
+
+# Stdlib-only Python; run directly with `python3 tools/refresh_versions.py`
+# (no rules_python dep on purpose — keeps the consumer-facing module graph
+# minimal). Exported so it can be referenced as a data dep if needed.
+exports_files([
+    "refresh_versions.py",
+])
