@@ -9,12 +9,10 @@ if [[ -z "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then
 fi
 
 RUNFILES_DIR="${RUNFILES_DIR:-$0.runfiles}"
-DEFS_GEN="$(find "$RUNFILES_DIR" -name defs.md.generated -print -quit)"
-EXT_GEN="$(find "$RUNFILES_DIR" -name extensions.md.generated -print -quit)"
-TC_GEN="$(find "$RUNFILES_DIR" -name toolchains.md.generated -print -quit)"
 
-cp "$DEFS_GEN" "$BUILD_WORKSPACE_DIRECTORY/docs/defs.md"
-cp "$EXT_GEN"  "$BUILD_WORKSPACE_DIRECTORY/docs/extensions.md"
-cp "$TC_GEN"   "$BUILD_WORKSPACE_DIRECTORY/docs/toolchains.md"
+for name in defs extensions toolchains machine; do
+  gen="$(find "$RUNFILES_DIR" -name "${name}.md.generated" -print -quit)"
+  cp "$gen" "$BUILD_WORKSPACE_DIRECTORY/docs/${name}.md"
+done
 
-echo "docs/{defs,extensions,toolchains}.md regenerated."
+echo "docs/{defs,extensions,toolchains,machine}.md regenerated."

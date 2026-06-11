@@ -39,6 +39,31 @@ development; point it at a machine via `CONTAINER_HOST`, the rules'
 So: on Linux (CI, prod) you get a hermetic daemonless engine; on a Mac
 or Windows dev box you get a pinned client that drives a local machine.
 
+### Self-managed machine on macOS (`podman_machine`)
+
+Instead of "bring your own `podman machine`", `//podman/machine:machine.bzl`
+provides a **self-managed, pinned** Podman service VM on macOS by
+composing [rules_macvm](https://github.com/fastverk/rules_macvm): it
+renders an Ignition file (inject an SSH key, enable `podman.socket`) and
+EFI-boots a bootable Podman/FCOS image via vfkit, exposing the API socket
+over vsock. Point `CONTAINER_HOST` at that socket and the rules below
+drive containers inside it.
+
+```python
+load("@rules_podman//podman/machine:machine.bzl", "podman_machine")
+
+podman_machine(
+    name = "machine",
+    image = "//path:fcos.raw",              # a bootable Podman/FCOS disk
+    ssh_authorized_keys = ["ssh-ed25519 AAAA… you@host"],
+)
+```
+
+The rendered Ignition and the VM spec are golden-tested, but the **live
+boot/connect path is not exercised in CI** (Apple Virtualization.framework
+can't run there) — validate on a Mac with a real bootable image. Windows
+still uses bring-your-own WSL2 machine.
+
 ### Hermetic container stores
 
 The rules take a `storage` attribute (engine toolchains only):

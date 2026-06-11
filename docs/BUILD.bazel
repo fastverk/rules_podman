@@ -30,6 +30,13 @@ stardoc(
     deps = ["//podman:toolchains_bzl"],
 )
 
+stardoc(
+    name = "machine_doc",
+    out = "machine.md.generated",
+    input = "//podman/machine:machine.bzl",
+    deps = ["//podman/machine:machine_bzl"],
+)
+
 diff_test(
     name = "defs_doc_up_to_date",
     file1 = "defs.md",
@@ -48,12 +55,19 @@ diff_test(
     file2 = ":toolchains_doc",
 )
 
+diff_test(
+    name = "machine_doc_up_to_date",
+    file1 = "machine.md",
+    file2 = ":machine_doc",
+)
+
 sh_binary(
     name = "update",
     srcs = ["update.sh"],
     data = [
         ":defs_doc",
         ":extensions_doc",
+        ":machine_doc",
         ":toolchains_doc",
     ],
 )

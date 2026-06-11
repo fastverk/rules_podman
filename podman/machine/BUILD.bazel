@@ -1,0 +1,15 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["machine.bzl"])
+
+bzl_library(
+    name = "machine_bzl",
+    srcs = ["machine.bzl"],
+    visibility = ["//docs:__pkg__"],
+    deps = [
+        "@rules_macvm//image:defs_bzl",
+        "@rules_macvm//vm:defs_bzl",
+    ],
+)

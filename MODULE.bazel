@@ -7,6 +7,20 @@ module(
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
 
+# Powers `podman_machine` (//podman/machine): a self-managed, pinned VM
+# that runs the podman service on macOS, where daemonless isn't possible.
+# Linux consumers pull this dep but never fetch a VMM (the vfkit binary
+# is only fetched if you use @rules_macvm's vfkit extension).
+#
+# TODO(publish): rules_macvm isn't in the fastverk bazel-registry yet, so
+# it's resolved from the sibling checkout via local_path_override. Drop
+# the override once rules_macvm is published.
+bazel_dep(name = "rules_macvm", version = "0.0.1")
+local_path_override(
+    module_name = "rules_macvm",
+    path = "../rules_macvm",
+)
+
 # Dev-only: only loaded by docs/BUILD.bazel and examples/smoke/...
 bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True)

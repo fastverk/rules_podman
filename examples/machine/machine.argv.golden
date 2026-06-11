@@ -1,0 +1,17 @@
+# kind: mock
+--cpus
+2
+--memory
+2048
+--bootloader
+efi,variable-store=$VM_RUNTIME/efi-vars.nvram,create
+--device
+virtio-blk,path=examples/machine/fcos.raw
+--device
+rosetta,mountTag=rosetta
+--ignition
+examples/machine/machine.ignition.ign
+--device
+virtio-net,nat
+--device
+virtio-vsock,port=1024,socketURL=unix://$VM_RUNTIME/podman.sock

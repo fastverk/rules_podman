@@ -1,0 +1,2 @@
+# placeholder bootable Podman/FCOS disk image for the podman_machine example
+# (content irrelevant under the mock backend; bring a real bootable image to actually boot)

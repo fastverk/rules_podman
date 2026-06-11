@@ -25,6 +25,12 @@ mirror the published bazel-registry entries.
   `_image_load` also take `storage = default|ephemeral|workspace` to
   isolate the container store (`--root`/`--runroot`/`--storage-driver=vfs`)
   on engine toolchains.
+- `podman_machine` (`//podman/machine:machine.bzl`): a self-managed
+  Podman service VM for macOS, composing `rules_macvm` — renders an
+  Ignition (ssh key + enable `podman.socket`) and EFI-boots a bootable
+  Podman/FCOS image with the API socket over vsock. Provisioning + VM
+  spec are golden-tested; the live boot/connect path needs a real Mac
+  and is not exercised in CI. (Adds a `bazel_dep` on rules_macvm.)
 - `tools/refresh_versions.py` re-pins a version across both upstreams
   via the GitHub releases API; stardoc-generated reference under `docs/`;
   `//examples/smoke` coverage (`podman --version` test + build_test, plus
