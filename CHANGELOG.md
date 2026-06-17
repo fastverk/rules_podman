@@ -4,6 +4,29 @@ All notable changes to rules_podman. The format is loosely
 [Keep a Changelog](https://keepachangelog.com/) — version headers
 mirror the published bazel-registry entries.
 
+## 0.0.2
+
+- **Fix: Linux daemonless engine couldn't find conmon.** podman locates
+  conmon and the OCI runtime via `containers.conf`'s `[engine] conmon_path`
+  / `runtime`, not via `$PATH` or `CONTAINERS_HELPER_BINARY_DIR`. The
+  bundle's `containers.conf` doesn't set them, so podman fell back to
+  compiled-in *absolute* defaults (`/usr/local/lib/podman/conmon`, …) that
+  don't exist once Bazel relocates the bundle into runfiles — every
+  container run failed with `could not find a working conmon binary`. The
+  generated launcher now emits a `CONTAINERS_CONF_OVERRIDE` re-pointing
+  `conmon_path` / `helper_binaries_dir` / the crun+runc runtimes at the
+  relocated `$ROOT`. Other base-conf keys (cgroup_manager, events_logger)
+  still apply. Adds an ubuntu-only `linux-engine` CI smoke that boots the
+  engine (`bazel run //examples/smoke:daemonless`).
+- **Fix: pull/run aborted with "no policy.json file found".** podman has no
+  env var or global flag for the image signature policy — it only reads
+  `/etc/containers/policy.json` or `$HOME/.config/containers/policy.json`. On a
+  host with neither (a from-scratch CI image), the launcher now seeds the
+  bundle's (permissive) `policy.json` at the user-level default path,
+  best-effort and never clobbering an existing one. Storage is left to podman's
+  rootless defaults (the bundle's `storage.conf` is root-oriented —
+  `graphroot=/var/lib/containers`).
+
 ## 0.0.1
 
 - Initial scaffold via `rels scaffold`.

@@ -28,6 +28,23 @@ jobs:
           repository-cache: true
       - run: bazel test //... --test_output=errors
 
+  linux-engine:
+    name: linux daemonless engine smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.10.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}-linux-engine
+          repository-cache: true
+      # Boots the daemonless engine end-to-end: `podman info` initializes
+      # the runtime, which probes conmon + the OCI runtime and fails with
+      # "could not find a working conmon binary" if the launcher's
+      # conmon_path/runtime wiring is wrong. `bazel run` (not `test`) keeps
+      # it out of the sandbox, whose nested-userns support is host-dependent.
+      - run: bazel run //examples/smoke:daemonless
+
   buildifier:
     name: buildifier lint
     runs-on: ubuntu-latest

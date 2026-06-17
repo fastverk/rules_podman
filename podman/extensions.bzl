@@ -74,6 +74,46 @@ export CONTAINERS_HELPER_BINARY_DIR="${{CONTAINERS_HELPER_BINARY_DIR:-$ROOT/usr/
 export CONTAINERS_CONF="${{CONTAINERS_CONF:-$ROOT/etc/containers/containers.conf}}"
 export CONTAINERS_REGISTRIES_CONF="${{CONTAINERS_REGISTRIES_CONF:-$ROOT/etc/containers/registries.conf}}"
 
+# conmon and the OCI runtime are NOT found via $PATH or
+# CONTAINERS_HELPER_BINARY_DIR — podman reads their locations from
+# containers.conf's `[engine] conmon_path` / `runtime`. The bundle's
+# containers.conf doesn't set them, so podman falls back to compiled-in
+# *absolute* defaults (/usr/local/lib/podman/conmon, /usr/bin/conmon, …)
+# that don't exist once Bazel relocates the tree into runfiles — hence
+# "could not find a working conmon binary". Emit a CONTAINERS_CONF_OVERRIDE
+# (the last/highest-priority layer) re-pointing them at the relocated
+# $ROOT. Other base-conf keys (cgroup_manager, events_logger) still apply.
+if [[ -z "${{CONTAINERS_CONF_OVERRIDE:-}}" ]]; then
+  _conf_override="$(mktemp "${{TMPDIR:-/tmp}}/rules_podman_conf.XXXXXX")"
+  cat >"$_conf_override" <<EOF
+[engine]
+conmon_path = ["$ROOT/usr/local/lib/podman/conmon"]
+helper_binaries_dir = ["$ROOT/usr/local/lib/podman"]
+runtime = "crun"
+[engine.runtimes]
+crun = ["$ROOT/usr/local/bin/crun"]
+runc = ["$ROOT/usr/local/bin/runc"]
+EOF
+  export CONTAINERS_CONF_OVERRIDE="$_conf_override"
+fi
+
+# podman has no env var or global flag for the image signature policy; it only
+# reads /etc/containers/policy.json or $HOME/.config/containers/policy.json. On
+# a host with neither (e.g. a from-scratch CI image) every pull/run aborts with
+# "no policy.json file found". If neither exists, seed the bundle's (permissive)
+# policy.json at the user-level default path — best-effort, and never clobbering
+# an existing one. Storage is left to podman's rootless defaults; the bundle's
+# storage.conf is root-oriented (graphroot=/var/lib/containers), wrong for a
+# rootless nonroot user.
+if [[ ! -f /etc/containers/policy.json &&
+      -n "${{HOME:-}}" &&
+      ! -f "$HOME/.config/containers/policy.json" &&
+      -f "$ROOT/etc/containers/policy.json" ]]; then
+  mkdir -p "$HOME/.config/containers" 2>/dev/null &&
+    cp "$ROOT/etc/containers/policy.json" "$HOME/.config/containers/policy.json" 2>/dev/null ||
+    true
+fi
+
 exec "$ROOT/usr/local/bin/podman" "$@"
 """
 
